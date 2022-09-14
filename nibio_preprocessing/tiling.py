@@ -65,7 +65,7 @@ class Tiling:
             self.convert_files_in_folder_from_las_to_ply(file_folder)
             # remove the las files
             self.remove_files_in_folder(file_folder, "las")
-            self.rename_files_in_the_folder(file_folder)
+            self.rename_files_in_the_folder_and_extend_with_digits(file_folder)
 
         # get the tile index
         if self.do_tile_index:
@@ -166,7 +166,7 @@ class Tiling:
         else:
             return str(number)
 
-    def rename_files_in_the_folder(self, folder=None):
+    def rename_files_in_the_folder_and_extend_with_digits(self, folder=None):
         """
         This function will rename all the files in a folder
         """

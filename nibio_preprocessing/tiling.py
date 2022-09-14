@@ -63,11 +63,14 @@ class Tiling:
         # convert the tiles to ply
         if self.do_mapping_to_ply:
             self.convert_files_in_folder_from_las_to_ply(file_folder)
+            # remove the las files
+            self.remove_files_in_folder(file_folder, "las")
+            self.rename_files_in_the_folder(file_folder)
 
         # get the tile index
         if self.do_tile_index:
             self.get_tile_index(file_folder)
-        
+
 
     def do_tiling_of_files_in_folder(self):
         """
@@ -116,8 +119,8 @@ class Tiling:
         This function will convert all the files in a folder from las to ply
         """
 
-        # get all the files in the folder and subfolders
-        files = glob.glob(folder + "/*.las")
+        # get all the files in the folder and subfolders las or laz
+        files = glob.glob(folder + "/*.las") + glob.glob(folder + "/*.laz")
 
         # loop through all the files
         for file in tqdm(files):
@@ -143,15 +146,44 @@ class Tiling:
             tile_index.loc[i, :] = [T, X, Y]   
 
         tile_index.to_csv(os.path.join(folder, 'tile_index.dat'), index=False, header=False, sep=' ')
+    
+    def remove_files_in_folder(self, folder=None, file_type=None):
+        """
+        This function will remove all the files in a folder of a certain type
+        """
+        files = glob.glob(folder + "/*." + file_type)
+        for file in files:
+            os.remove(file)
 
+    def three_digits(self, number):
+        """
+        This function will add leading zeros to a number
+        """
+        if number < 10:
+            return "00" + str(number)
+        elif number < 100:
+            return "0" + str(number)
+        else:
+            return str(number)
+
+    def rename_files_in_the_folder(self, folder=None):
+        """
+        This function will rename all the files in a folder
+        """
+        files = glob.glob(folder + "/*.ply")
+        for i, file in enumerate(files):
+            os.rename(file, os.path.join(folder, self.three_digits(i) + ".ply"))
 
     def run(self):
+        self.convert_files_in_folder_from_las_to_ply(self.input_folder)
         self.do_tiling_of_files_in_folder()
+
 
 def main(input_folder, output_folder, tile_size=10, tile_buffer=0, do_mapping_to_ply=False, do_tile_index=False):
     """
     This function will tile all the files in a folder
     """
+
     tiling = Tiling(input_folder, output_folder, tile_size, tile_buffer, do_mapping_to_ply, do_tile_index)
     tiling.run()
 

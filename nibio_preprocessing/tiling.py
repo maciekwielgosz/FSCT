@@ -49,22 +49,31 @@ class Tiling:
                     "buffer":str(self.tile_buffer) 
                 },
                 {
-                    "type":"writers.las",
-                    "filename":file_folder + "/#.las" 
+                    "type":"writers.ply",
+                    "storage_mode":"little endian",
+                    "filename":file_folder + "/#.ply" 
                   
                 }
             ]
         }
         # do the pdal things
-        pipeline = pdal.Pipeline(json.dumps(data))
-        pipeline.validate()
-        pipeline.execute()
+        # pipeline = pdal.Pipeline(json.dumps(data))
+        # # pipeline.validate()
+        # pipeline.execute()
+
+        json_string = json.dumps(data)
+
+        # create pipeline
+        pipeline = pdal.Pipeline(json_string)
+
+        # execute pipeline
+        tile = pipeline.execute()
 
         # convert the tiles to ply
         if self.do_mapping_to_ply:
-            self.convert_files_in_folder_from_las_to_ply(file_folder)
+            # self.convert_files_in_folder_from_las_to_ply(file_folder)
             # remove the las files
-            self.remove_files_in_folder(file_folder, "las")
+            # self.remove_files_in_folder(file_folder, "las")
             self.rename_files_in_the_folder_and_extend_with_digits(file_folder)
 
         # get the tile index
@@ -81,8 +90,8 @@ class Tiling:
         if not os.path.exists(self.output_folder):
             os.makedirs(self.output_folder)
 
-        # get all the files in the input folder
-        files = glob.glob(self.input_folder + "/*.laz")
+        # get all the files in the input folder (ply format assummed)
+        files = glob.glob(self.input_folder + "/*.ply") 
 
         # loop through all the files
         for file in tqdm(files):
@@ -100,13 +109,13 @@ class Tiling:
         data = {
             "pipeline":[
                 { # read input data
-                    "type":"readers.las",
+                    "type":"readers.ply",
                     "filename":file,
                     #"spatialreference":"EPSG:25832" 
                 },
                 {
                     "type":"writers.ply",
-                    "filename":file_name_base +".ply" 
+                    "filename":file_name_base +"#.ply" 
                 }
             ]
         }
@@ -137,12 +146,28 @@ class Tiling:
             T = int(os.path.split(ply)[1].split('.')[0])
             reader = {"type":f"readers{os.path.splitext(ply)[1]}", "filename":ply}
             stats =  {"type":"filters.stats", "dimensions":"X,Y"}
+
+            # data = {"pipeline":[
+            #     { # read input data
+            #         "filename":ply,
+            #         #"spatialreference":"EPSG:25832" 
+            #     },
+            #     { # defines the tiling processing
+            #         "type":"filters.stats", 
+            #         "dimensions":"X,Y"
+            
+            #     }]}
+
             JSON = json.dumps([reader, stats])
+            # JSON = json.dumps(data)
+            # print(JSON)
             pipeline = pdal.Pipeline(JSON)
             pipeline.execute()
-            JSON = json.loads(pipeline.metadata)
-            X = JSON['metadata']['filters.stats']['statistic'][0]['average']
-            Y = JSON['metadata']['filters.stats']['statistic'][1]['average']
+            X = pipeline.metadata['metadata']['filters.stats']['statistic'][0]['average']
+            Y = pipeline.metadata['metadata']['filters.stats']['statistic'][1]['average']
+            # JSON = json.loads(str(pipeline.metadata))
+            # X = JSON['metadata']['filters.stats']['statistic'][0]['average']
+            # Y = JSON['metadata']['filters.stats']['statistic'][1]['average']
             tile_index.loc[i, :] = [T, X, Y]   
 
         tile_index.to_csv(os.path.join(folder, 'tile_index.dat'), index=False, header=False, sep=' ')
@@ -175,7 +200,7 @@ class Tiling:
             os.rename(file, os.path.join(folder, self.three_digits(i) + ".ply"))
 
     def run(self):
-        self.convert_files_in_folder_from_las_to_ply(self.input_folder)
+        # self.convert_files_in_folder_from_las_to_ply(self.input_folder)
         self.do_tiling_of_files_in_folder()
 
 

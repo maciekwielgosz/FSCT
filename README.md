@@ -90,4 +90,8 @@ For linux (Ubuntu): `export PYTHONPATH='.' `
 
 For Windows you can check: <https://stackoverflow.com/questions/3701646/how-to-add-to-the-pythonpath-in-windows-so-it-finds-my-modules-packages>
 
-Then you can run the the code with sample files: `./run_sample.sh` (you need to run the following command `chmod +x run_sample.sh`)
+Then you can run the the code with sample files: 
+```
+chmod +x run_sample.sh
+./run_sample.sh
+```

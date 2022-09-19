@@ -1,3 +1,5 @@
+
+# The old repo part
 # TLS point cloud semantic classification and individual tree segmentation
 
 This repository describes methods to extract individual trees from TLS point clouds. This is done using a 3-step process
@@ -76,4 +78,15 @@ optional arguments:
   --pandarallel         use pandarallel
   --verbose             print something
 ```
+
+# Installation steps of the pipeline
+
+# Running the pipeline with the NIBIO code
+
+## Running with sample files
+Once you close the repo you should export the path (you should be in FSCT folder).
+
+
+For linux (Ubuntu): ``` export PYTHONPATH='.' ```
+For Windows you can check: <https://stackoverflow.com/questions/3701646/how-to-add-to-the-pythonpath-in-windows-so-it-finds-my-modules-packages>
 

@@ -1,12 +1,9 @@
 import argparse
 import pdal
-import os, glob, shutil
+import os, glob
 import json
 import pandas as pd
 from tqdm import tqdm
-
-from pathlib import Path
-
 
 class Tiling:
     """
@@ -57,23 +54,12 @@ class Tiling:
             ]
         }
         # do the pdal things
-        # pipeline = pdal.Pipeline(json.dumps(data))
-        # # pipeline.validate()
-        # pipeline.execute()
-
         json_string = json.dumps(data)
-
-        # create pipeline
         pipeline = pdal.Pipeline(json_string)
-
-        # execute pipeline
         tile = pipeline.execute()
 
         # convert the tiles to ply
         if self.do_mapping_to_ply:
-            # self.convert_files_in_folder_from_las_to_ply(file_folder)
-            # remove the las files
-            # self.remove_files_in_folder(file_folder, "las")
             self.rename_files_in_the_folder_and_extend_with_digits(file_folder)
 
         # get the tile index
@@ -146,28 +132,11 @@ class Tiling:
             T = int(os.path.split(ply)[1].split('.')[0])
             reader = {"type":f"readers{os.path.splitext(ply)[1]}", "filename":ply}
             stats =  {"type":"filters.stats", "dimensions":"X,Y"}
-
-            # data = {"pipeline":[
-            #     { # read input data
-            #         "filename":ply,
-            #         #"spatialreference":"EPSG:25832" 
-            #     },
-            #     { # defines the tiling processing
-            #         "type":"filters.stats", 
-            #         "dimensions":"X,Y"
-            
-            #     }]}
-
             JSON = json.dumps([reader, stats])
-            # JSON = json.dumps(data)
-            # print(JSON)
             pipeline = pdal.Pipeline(JSON)
             pipeline.execute()
             X = pipeline.metadata['metadata']['filters.stats']['statistic'][0]['average']
             Y = pipeline.metadata['metadata']['filters.stats']['statistic'][1]['average']
-            # JSON = json.loads(str(pipeline.metadata))
-            # X = JSON['metadata']['filters.stats']['statistic'][0]['average']
-            # Y = JSON['metadata']['filters.stats']['statistic'][1]['average']
             tile_index.loc[i, :] = [T, X, Y]   
 
         tile_index.to_csv(os.path.join(folder, 'tile_index.dat'), index=False, header=False, sep=' ')

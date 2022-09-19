@@ -82,7 +82,7 @@ optional arguments:
 # Installation steps of the pipeline
 The installation involves conda.
 
-The steps to take on Ubuntu 20.04 machine in the docker:
+The steps to take on Ubuntu 20.04 machine on a linux machine or in a docker:
 
 ```
 UBUNTU_VER=20.04
@@ -105,6 +105,14 @@ conda activate pdal-env
 conda install -c conda-forge pdal python-pdal
 
 ```
+You should reboot shell session at this point. 
+The next steps:
+
+```
+conda activate pdal-env
+git clone git@github.com:maciekwielgosz/FSCT.git
+```
+To clone in this way you may need to exchange the keys or you can clone: 'git clone https://github.com/maciekwielgosz/FSCT.git'
 
 # Running the pipeline with the NIBIO code
 

@@ -80,6 +80,13 @@ optional arguments:
 ```
 
 # Installation steps of the pipeline
+The installation involves conda.
+
+The steps to take on Ubuntu 20.04 machine:
+
+```
+
+```
 
 # Running the pipeline with the NIBIO code
 

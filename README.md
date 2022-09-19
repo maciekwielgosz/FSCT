@@ -82,9 +82,27 @@ optional arguments:
 # Installation steps of the pipeline
 The installation involves conda.
 
-The steps to take on Ubuntu 20.04 machine:
+The steps to take on Ubuntu 20.04 machine in the docker:
 
 ```
+UBUNTU_VER=20.04
+CONDA_VER=latest
+OS_TYPE=x86_64
+
+mkdir conda_installation
+cd conda_installation
+RUN curl -LO "http://repo.continuum.io/miniconda/Miniconda3-${CONDA_VER}-Linux-${OS_TYPE}.sh"
+curl -LO "http://repo.continuum.io/miniconda/Miniconda3-${CONDA_VER}-Linux-${OS_TYPE}.sh"
+sudo bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda -b
+sudo groupadd anaconda_admin
+sudo chown -R :anaconda_admin /miniconda
+sudo chmod -R 775 /miniconda 
+sudo adduser nibio anaconda_admin
+conda update conda
+conda init
+conda create --name pdal-env python=3.8.13
+conda activate pdal-env
+conda install -c conda-forge pdal python-pdal
 
 ```
 

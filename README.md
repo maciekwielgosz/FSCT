@@ -112,7 +112,7 @@ The next steps:
 conda activate pdal-env
 git clone git@github.com:maciekwielgosz/FSCT.git
 ```
-To clone in this way you may need to exchange the keys or you can clone: 'git clone https://github.com/maciekwielgosz/FSCT.git'
+To clone in this way you may not need to exchange the keys you can use the command: 'git clone https://github.com/maciekwielgosz/FSCT.git'
 
 # Running the pipeline with the NIBIO code
 

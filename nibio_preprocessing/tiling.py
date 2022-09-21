@@ -72,9 +72,15 @@ class Tiling:
         This function will tile all the files in a folder
         """
         
+        # check if the output folder exists and remove it
+        if os.path.exists(self.output_folder):
+            os.system("rm -r " + self.output_folder)
+
+        os.makedirs(self.output_folder)
+
         # create a destination folder for all the tiles
-        if not os.path.exists(self.output_folder):
-            os.makedirs(self.output_folder)
+        # if not os.path.exists(self.output_folder):
+        #     os.makedirs(self.output_folder)
 
         # get all the files in the input folder (ply format assummed)
         files = glob.glob(self.input_folder + "/*.ply") 

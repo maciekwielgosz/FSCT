@@ -41,6 +41,7 @@ fi
 # # iterate over all files in the input folder and do sematic segmentation
 echo  "Starting semantic segmentation"
 for file in $data_folder/*.ply; do
+    # python fsct/run.py --point-cloud $file --batch_size 5 --odir $data_folder --model ./fsct/model/model.pth
     python fsct/run.py --point-cloud $file --batch_size 5 --odir $data_folder
 done
 
@@ -65,15 +66,15 @@ check if the output folder exists
 mkdir -p $data_folder/instance_segmented_point_clouds
 
 # Do the instances and iterate over all the segmented point clouds
-for segmented_point_cloud in data_folder/segmented_point_clouds/*.segmented.ply; do
+for segmented_point_cloud in $data_folder/segmented_point_clouds/*.segmented.ply; do
     # get the name of the segmented point cloud
     segmented_point_cloud_name=$(basename $segmented_point_cloud)
     # get the name of the segmented point cloud without the extension
     segmented_point_cloud_name_no_ext="${segmented_point_cloud_name%.*}"
     # create a directory for the instance segmented point clouds
-    mkdir -p data_folder/instance_segmented_point_clouds/$segmented_point_cloud_name_no_ext
+    mkdir -p $data_folder/instance_segmented_point_clouds/$segmented_point_cloud_name_no_ext
     # iterate over all the tiles of the segmented point cloud
-    for tile in data_folder/segmented_point_clouds/tiled/$segmented_point_cloud_name_no_ext/*.ply; do
+    for tile in $data_folder/segmented_point_clouds/tiled/$segmented_point_cloud_name_no_ext/*.ply; do
         # get the name of the tile
         tile_name=$(basename $tile)
         # get the name of the tile without the extension
@@ -101,6 +102,8 @@ done
 # do merging of the instance segmented point clouds
 echo "Merging instance segmented point clouds"
 python nibio_preprocessing/merging_and_labeling.py --data_folder $data_folder/instance_segmented_point_clouds/ 
+
+
 
 
 

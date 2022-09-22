@@ -4,6 +4,7 @@
 # General parameters
 CLEAR_INPUT_FOLDER=1  # 1: clear input folder, 0: not clear input folder
 
+# TODO: Add these parameters the file at the end !!!
 # Tiling parameters
 N_TILES=3
 SLICE_THICKNESS=0.5

@@ -8,16 +8,17 @@ CLEAR_INPUT_FOLDER=1  # 1: clear input folder, 0: not clear input folder
 # Tiling parameters
 N_TILES=3
 SLICE_THICKNESS=0.5
-FIND_STEMS_HEIGHT=2
+FIND_STEMS_HEIGHT=1.5
 FIND_STEMS_THICKNESS=0.5
 GRAPH_MAXIMUM_CUMULATIVE_GAP=3
 ADD_LEAVES_VOXEL_LENGTH=0.5
+FIND_STEMS_MIN_POINTS=50
 ############################# end of parameters declaration ############################
 
 
 # Do the environment setup
-# export PYTHONPATH='.'
-# conda activate pdal-env-1
+export PYTHONPATH='.'
+conda activate pdal-env-1
 
 # read input folder as a command line argument
 # show a message to provide the input folder
@@ -30,39 +31,39 @@ then
     exit 1
 fi
 
-# clear input folder if CLEAR_INPUT_FOLDER is set to 1
-if [ $CLEAR_INPUT_FOLDER -eq 1 ]
-then
-    # delete all the files and folders except the ply files in the input folder
-    echo "Clearing input folder"
-    find $data_folder/ -type f ! -name '*.ply' -delete # delete all the files except the ply files
-    find $data_folder/* -type d -exec rm -rf {} + # delete all the folders in the input folder
-fi
+# # clear input folder if CLEAR_INPUT_FOLDER is set to 1
+# if [ $CLEAR_INPUT_FOLDER -eq 1 ]
+# then
+#     # delete all the files and folders except the ply files in the input folder
+#     echo "Clearing input folder"
+#     find $data_folder/ -type f ! -name '*.ply' -delete # delete all the files except the ply files
+#     find $data_folder/* -type d -exec rm -rf {} + # delete all the folders in the input folder
+# fi
 
-# # iterate over all files in the input folder and do sematic segmentation
-echo  "Starting semantic segmentation"
-for file in $data_folder/*.ply; do
-    # python fsct/run.py --point-cloud $file --batch_size 5 --odir $data_folder --model ./fsct/model/model.pth
-    python fsct/run.py --point-cloud $file --batch_size 5 --odir $data_folder
-done
+# # # iterate over all files in the input folder and do sematic segmentation
+# echo  "Starting semantic segmentation"
+# for file in $data_folder/*.ply; do
+#     # python fsct/run.py --point-cloud $file --batch_size 5 --odir $data_folder --model ./fsct/model/model.pth
+#     python fsct/run.py --point-cloud $file --batch_size 5 --odir $data_folder
+# done
 
-# move the output of the first step to the input folder of the second step
-mkdir -p $data_folder/segmented_point_clouds
+# # move the output of the first step to the input folder of the second step
+# mkdir -p $data_folder/segmented_point_clouds
 
-# Check if the file exists and if they exist move them to the new folder
-if [ -f "$data_folder/*.ply" ]
-then
-    mv $data_folder/*.ply $data_folder/segmented_point_clouds
-fi
+# # Check if the file exists and if they exist move them to the new folder
+# if [ -f "$data_folder/*.ply" ]
+# then
+#     mv $data_folder/*.ply $data_folder/segmented_point_clouds
+# fi
 
-mv $data_folder/*.segmented.ply $data_folder/segmented_point_clouds
+# mv $data_folder/*.segmented.ply $data_folder/segmented_point_clouds
 
-# do the tiling and tile index generation
-echo "Tiling and tile index generation"
-python nibio_preprocessing/tiling.py -i $data_folder/segmented_point_clouds/ -o $data_folder/segmented_point_clouds/tiled
+# # do the tiling and tile index generation
+# echo "Tiling and tile index generation"
+# python nibio_preprocessing/tiling.py -i $data_folder/segmented_point_clouds/ -o $data_folder/segmented_point_clouds/tiled
 
 #  iterate over all the segmented point clouds
-check if the output folder exists
+# check if the output folder exists
 
 mkdir -p $data_folder/instance_segmented_point_clouds
 
@@ -87,16 +88,17 @@ for segmented_point_cloud in $data_folder/segmented_point_clouds/*.segmented.ply
         -t $tile \
         --tindex $data_folder/segmented_point_clouds/tiled/$segmented_point_cloud_name_no_ext/tile_index.dat \
         -o $data_folder/instance_segmented_point_clouds/$segmented_point_cloud_name_no_ext/$tile_name_no_ext \
-        --n-tiles 3 \
-        --slice-thickness .5 \
-        --find-stems-height 2 \
-        --find-stems-thickness .5 \
+        --n-tiles $N_TILES \
+        --slice-thickness $SLICE_THICKNESS \
+        --find-stems-height $FIND_STEMS_HEIGHT \
+        --find-stems-thickness $FIND_STEMS_THICKNESS \
         --pandarallel --verbose \
         --add-leaves \
-        --add-leaves-voxel-length .5 \
-        --graph-maximum-cumulative-gap 3 \
+        --add-leaves-voxel-length $ADD_LEAVES_VOXEL_LENGTH \
+        --graph-maximum-cumulative-gap $GRAPH_MAXIMUM_CUMULATIVE_GAP \
         --save-diameter-class \
-        --ignore-missing-tiles
+        --ignore-missing-tiles \
+        --find-stems-min-points $FIND_STEMS_MIN_POINTS
     done
 done
 

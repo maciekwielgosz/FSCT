@@ -31,7 +31,7 @@ def make_folder_structure(params):
     params.working_dir = os.path.join(params.odir, params.basename + '.tmp')
     
     if not os.path.isdir(params.odir):
-        os.makedirs(odir)
+        os.makedirs(params.odir)
 
     if not os.path.isdir(params.working_dir):
         os.makedirs(params.working_dir)
@@ -254,10 +254,13 @@ def make_dtm(params):
     # loop over incresing size of window until no cell are nan
     ground_arr.loc[:, 'ZZ'] = np.nan
     size = 3 
+
     while np.any(np.isnan(ground_arr.ZZ)):
+        print("nan:", np.sum(np.isnan(ground_arr.ZZ)))
         ground_arr.loc[:, 'ZZ'] = ndimage.generic_filter(ground_arr.z.values.reshape(*X.shape), # create raster, 
                                                          lambda z: np.nanmedian(z), size=size).flatten()
         size += 2
+        # if size > 20: break
 
     ground_arr[['xx', 'yy', 'ZZ']].to_csv(os.path.join(params.odir, f'{params.basename}.dem.csv'), index=False)
 

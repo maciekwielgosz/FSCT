@@ -96,7 +96,8 @@ def SemanticSegmentation(params):
     neighbours = NearestNeighbors(n_neighbors=16, 
                                   algorithm='kd_tree', 
                                   metric='euclidean', 
-                                  radius=0.05).fit(classified_pc[:, :3])
+                                  radius=0.05,
+                                  n_jobs=-1).fit(classified_pc[:, :3])
     _, indices = neighbours.kneighbors(params.pc[['x', 'y', 'z']].values)
 
     params.pc = params.pc.drop(columns=[c for c in params.pc.columns if c in ['label', 'pTerrain', 'pLeaf', 'pWood', 'pCWD']])

@@ -100,18 +100,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
     point_cloud_filter = PointCloudFilter(args.dir, args.density, args.verbose)
     point_cloud_filter.main()
-
-
-# folder = '/home/nibio/mutable-outside-world/data/raw_for_pipeline_test/maciek'
-# pcd = '/home/nibio/mutable-outside-world/data/raw_for_pipeline_test/maciek/Plot69_2022-06-15_09-08-53_9pct_time.las'
-# point_cloud_filter = PointCloudFilter(folder)
-
-# # read the point cloud
-# inFile = laspy.read(pcd)
-
-# print(laspy.__version__)
-# # print(point_cloud_filter.compute_density(inFile))
-# print(point_cloud_filter.reduce_point_cloud(inFile, threshold=0.5, reduce_z=False))
-
-
-  

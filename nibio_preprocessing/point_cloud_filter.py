@@ -2,7 +2,7 @@ import argparse
 from functools import reduce
 import os
 from tabnanny import verbose
-import laspy
+import laspy # requires laspy==2.1.2 (check if doesn't work)
 import numpy as np
 from tqdm import tqdm
 

@@ -66,10 +66,8 @@ done
 # move the output of the first step to the input folder of the second step
 mkdir -p $data_folder/segmented_point_clouds
 
-# Check if the file exists and if they exist move them to the new folder
-if [ -f $data_folder/*.segmented.ply ]; then
-    mv $data_folder/*.segmented.ply $data_folder/segmented_point_clouds
-fi
+# move all .segmented.ply files to the segmented_point_clouds folder if they are in the input folder
+find $data_folder/ -type f -name '*.segmented.ply' -exec mv {} $data_folder/segmented_point_clouds/ \;
 
 # do the tiling and tile index generation
 echo "Tiling and tile index generation"
@@ -116,8 +114,40 @@ for segmented_point_cloud in $data_folder/segmented_point_clouds/*.segmented.ply
 done
 
 # do merging of the instance segmented point clouds
-echo "Merging instance segmented point clouds"
-python nibio_preprocessing/merging_and_labeling.py --data_folder $data_folder/instance_segmented_point_clouds/ 
+for instance_segmented_point_cloud in $data_folder/instance_segmented_point_clouds/*; do
+    python nibio_preprocessing/merging_and_labeling.py --data_folder $instance_segmented_point_cloud 
+done
+
+# # create the results folder
+mkdir -p $data_folder/results
+
+# # create the input data folder
+mkdir -p $data_folder/results/input_data
+
+# # move input data to the input data folder
+find $data_folder/ -maxdepth 1 -type f -name '*.ply' -exec mv {} $data_folder/results/input_data/ \;
+
+# # create the segmented point clouds folder
+mkdir -p $data_folder/results/segmented_point_clouds
+
+# move segmented point clouds to the segmented point clouds folder
+find $data_folder/segmented_point_clouds/ -maxdepth 1 -type f -name '*.ply' -exec mv {} $data_folder/results/segmented_point_clouds/ \;
+
+# # create the instance segmented point clouds folder
+mkdir -p $data_folder/results/instance_segmented_point_clouds
+
+# iterate over all the instance segmented point clouds 
+# move instance segmented point clouds to the instance segmented point clouds folder and rename them
+for instance_segmented_point_cloud in $data_folder/instance_segmented_point_clouds/*; do
+    # get the name of the instance segmented point cloud
+    instance_segmented_point_cloud_name=$(basename $instance_segmented_point_cloud)
+    # get the name of the instance segmented point cloud without the extension
+    instance_segmented_point_cloud_name_no_ext="${instance_segmented_point_cloud_name%.*}"
+    # move the instance segmented point cloud to the instance segmented point clouds folder
+    find $instance_segmented_point_cloud/ -maxdepth 1 -type f -name '*.ply' -exec mv {} $data_folder/results/instance_segmented_point_clouds/$instance_segmented_point_cloud_name_no_ext.ply \;
+done
+
+echo "Done"
 
 
 

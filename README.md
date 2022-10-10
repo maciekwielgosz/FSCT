@@ -1,83 +1,8 @@
 
-# The old repo part
-# TLS point cloud semantic classification and individual tree segmentation
+# Orinal repo
+For the orignal repo, please take a look there: https://github.com/philwilkes/FSCT
 
-This repository describes methods to extract individual trees from TLS point clouds. This is done using a 3-step process
 
-### 1. rxp-pipeline
-
-This step preprocesses data captured with RIEGL VZ TLS data. Code and details can be found [here](https://github.com/philwilkes/rxp-pipeline). 
-
-### 2. FSCT _lite_
-
-This repo is forked from [@SKrisanski](https://github.com/SKrisanski/FSCT) and is a _lite_ version that only runs the semantic segmentation (ground, wood, leaf, cwd). Typical usage is:
-
-`python run.py -p <point_cloud> --tile-index <path_to_index> --buffer <buffer> --verbose`
-
-```
-optional arguments:
-  -h, --help            show this help message and exit
-  --point-cloud POINT_CLOUD, -p POINT_CLOUD
-                        path to point cloud
-  --params PARAMS       path to pickled parameter file
-  --odir ODIR           output directory
-  --step STEP           which process to run to
-  --redo REDO           which process to run to
-  --tile-index TILE_INDEX
-                        path to tile index in space delimited format "TILE X Y"
-  --buffer BUFFER       included data from neighbouring tiles
-  --batch_size BATCH_SIZE
-                        If you get CUDA errors, try lowering this.
-  --num_procs NUM_PROCS
-                        Number of CPU cores you want to use. If you run out of RAM, lower this.
-  --keep-npy            Keeps .npy files used for segmentation after inference is finished.
-  --output_fmt OUTPUT_FMT
-                        file type of output
-  --verbose             print stuff
-  ```
-
-### 3. Instance segmentation to extract individual trees
-
-Following classification an instance segmenation can be run to seperate individual trees using:
-
-`python points2trees.py -t 001.downsample.segmented.ply --tindex ../tile_index.dat -o ../tmp/ --n-tiles 5 --slice-thickness .5 --find-stems-height 2 --find-stems-thickness .5 --pandarallel --verbose --add-leaves --add-leaves-voxel-length .5 --graph-maximum-cumulative-gap 3 --save-diameter-class --ignore-missing-tiles`
-
-```
-optional arguments:
-  -h, --help            show this help message and exit
-  --tile TILE, -t TILE  fsct directory
-  --odir ODIR, -o ODIR  output directory
-  --tindex TINDEX       path to tile index
-  --n-tiles N_TILES     enlarges the number of tiles i.e. 3x3 or tiles or 5 x 5 tiles
-  --overlap OVERLAP     buffer to crop adjacent tiles
-  --slice-thickness SLICE_THICKNESS
-                        slice thickness for constructing graph
-  --find-stems-height FIND_STEMS_HEIGHT
-                        height for identifying stems
-  --find-stems-thickness FIND_STEMS_THICKNESS
-                        thickness of slice used for identifying stems
-  --find-stems-min-radius FIND_STEMS_MIN_RADIUS
-                        minimum radius of found stems
-  --find-stems-min-points FIND_STEMS_MIN_POINTS
-                        minimum number of points for found stems
-  --graph-edge-length GRAPH_EDGE_LENGTH
-                        maximum distance used to connect points in graph
-  --graph-maximum-cumulative-gap GRAPH_MAXIMUM_CUMULATIVE_GAP
-                        maximum cumulative distance between a base and a cluster
-  --min-points-per-tree MIN_POINTS_PER_TREE
-                        minimum number of points for a identified tree
-  --add-leaves          add leaf points
-  --add-leaves-voxel-length ADD_LEAVES_VOXEL_LENGTH
-                        voxel sixe when add leaves
-  --add-leaves-edge-length ADD_LEAVES_EDGE_LENGTH
-                        maximum distance used to connect points in leaf graph
-  --save-diameter-class
-                        save into dimeter class directories
-  --ignore-missing-tiles
-                        ignore missing neighbouring tiles
-  --pandarallel         use pandarallel
-  --verbose             print something
-```
 
 # Installation steps of the pipeline
 The installation involves conda.
@@ -106,24 +31,62 @@ conda install -c conda-forge pdal python-pdal
 
 ```
 You should reboot shell session at this point. 
-The next steps:
+Next, you should clone the repo with the following command: 
 
 ```
-conda activate pdal-env
 git clone git@github.com:maciekwielgosz/FSCT.git
 ```
-To clone in this way you may not need to exchange the keys you can use the command: 'git clone https://github.com/maciekwielgosz/FSCT.git'
+if you didn't exchange ssh keys you may need to use the following command:
+ `git clone https://github.com/maciekwielgosz/FSCT.git`
 
 # Running the pipeline with the NIBIO code
 
-## Running with sample files
-Once you close the repo you should export the path (you should be in FSCT folder).
+Once you clone the repo you should export the path (you should be in FSCT folder).
 
-For linux (Ubuntu): `export PYTHONPATH='.' `
+For linux (Ubuntu): `export PYTHONPATH='.' ` and make sure that activate the conda `conda activate pdal-env`.
 
 For Windows you can check: <https://stackoverflow.com/questions/3701646/how-to-add-to-the-pythonpath-in-windows-so-it-finds-my-modules-packages>
 
-Then you can run the the code with sample files: 
+
+## Running a whole pipeline
+In order to run a whole pipeline run the following command: `./run_all.sh folder`. 
+
+It may take <ins> very long time </ins> depending on your machine and the number of files and if you change the parameter if points density (by default its 150) to some lower number. The lower the number the bigger pointclounds are to be precessed and more time it may take. Keep in mind that at some point (for too low of the number) the pipeline may break. 
+
+Make sure that you put the data in `*.las` format to this folder. If your files are in a different format e.g. `*.laz` you can use `python nibio_preprocessing/convert_files_in_folder.py --input_folder input_folder_name --output_folder output_folder las ` to convert your file to `*.las` format. 
+
+The pipeline is composed of serveral steps and input parametes in `run_all.sh input_folder_name` should be set before the run. The default parameters are as follows:
+```
+CLEAR_INPUT_FOLDER=1  # 1: clear input folder, 0: not clear input folder
+CONDA_ENV="pdal-env-1" # conda environment for running the pipeline
+
+# Tiling parameters
+N_TILES=3
+SLICE_THICKNESS=0.5
+FIND_STEMS_HEIGHT=1.5
+FIND_STEMS_THICKNESS=0.5
+GRAPH_MAXIMUM_CUMULATIVE_GAP=3
+ADD_LEAVES_VOXEL_LENGTH=0.5
+FIND_STEMS_MIN_POINTS=50
+```
+The stages are :
+* reduction of the point clound size to the point where it has density of 150 points / square meter
+* mapping to `*.ply` format, all the reducted`*.las` files are mapped and the orignal files are removed (the converted to `*ply` are kept)
+* semantic segmentation,
+* instance segmentation,
+* consolidation of the results (each instance is seperate so they have to be consolidated into a single cloud point),
+* postprocessing which puts everthing to a single folder in `input_folder/results`. 
+
+Folder `input_folder/results` contain three subfolders: 
+```
+.
++--input_data
++--instance_segmented_point_clouds
++--segmented_point_clouds
+```
+
+## Running with sample files
+The repo comes with sample file. You can use them to test your setup. To run the folow do:
 ```
 chmod +x run_sample.sh
 ./run_sample.sh

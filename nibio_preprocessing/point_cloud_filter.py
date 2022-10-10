@@ -8,9 +8,10 @@ from tqdm import tqdm
 
 
 class PointCloudFilter():
-    def __init__(self, directory_with_point_clouds, density=50, verbose=False):
+    def __init__(self, directory_with_point_clouds, density=50, in_place=False, verbose=False):
         self.directory_with_point_clouds = directory_with_point_clouds
         self.verbose = verbose
+        self.in_place = in_place
         self.density = density
     
     def compute_density(self, point_cloud):
@@ -85,7 +86,11 @@ class PointCloudFilter():
             inFile = self.reduce_point_cloud_to_density(inFile)
             # save the point cloud to the same directory with a new name
             inFile.write(point_cloud_path.replace(".las", "_filtered.las"))
-    
+
+            # do write in place if specified
+            if self.in_place:
+                os.remove(point_cloud_path)
+                os.rename(point_cloud_path.replace(".las", "_filtered.las"), point_cloud_path)
 
         if self.verbose:
             print("Done.")
@@ -95,6 +100,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir', type=str, default='', help='path to the folder containing the point clouds')
     parser.add_argument('--density', type=int, default=50, help='desired density')
+    parser.add_argument('--in_place', action='store_true', default=False, help='write in place')
     parser.add_argument('--reduce-z', action='store_true', default=False,  help='reduce z as well as x and y')
     parser.add_argument('--verbose', action='store_true', default=False,  help='print more information')
     args = parser.parse_args()

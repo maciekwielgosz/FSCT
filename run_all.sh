@@ -27,14 +27,20 @@ fi
 
 # conda activate pdal-env-1
 
-# check if conda is activated if not activate it
-if [ -z "$CONDA_ENV" ]; then
-    echo "Conda is not activated. Activating it"
-    conda activate pdal-env-1
-else
-    echo "Conda is activated"
+# check if activated conda environment is the same as the one specified in the parameters
+if [ "$CONDA_DEFAULT_ENV" != "$CONDA_ENV" ]; then
+    echo "The activated conda environment is not the same as the one specified in the parameters."
+    echo "Please activate the correct conda environment and run the script again."
+    exit 1
 fi
 
+# check if conda is activated if not activate it
+# if [ -z "$CONDA_DEFAULT_ENV" ]; then
+#     echo "Conda is not activated. Activating it"
+#     conda activate pdal-env-1
+# else
+#     echo "Conda is activated"
+# fi
 
 # read input folder as a command line argument
 # show a message to provide the input folder
@@ -46,6 +52,24 @@ then
     echo "No input folder provided, please provide the input folder as a command line argument"
     exit 1
 fi
+
+# check there are las files in the input folder
+count=`ls -1 $data_folder/*.las 2>/dev/null | wc -l`
+
+if [ $count != 0 ]; then
+    echo "$count las files found in the input folder"
+else
+    echo "No las files found in the input folder. All files in the input folder should have .las extension."
+    exit 1
+fi 
+
+#TODO: do the point cloud filtering using nibio_preprocessing/filter_point_cloud.py
+echo "Doing the point cloud filtering to density of 150 points per cubic meter"
+python nibio_preprocessing/point_cloud_filter.py --dir $data_folder --density 150 --verbose --in_place
+
+# covert all the files to ply format using nibio_preprocessing/convert_files_in_folder.py
+echo "Converting all the files to ply format"
+python nibio_preprocessing/convert_files_in_folder.py --input_folder $data_folder --output_folder $data_folder --out_file_type ply
 
 # clear input folder if CLEAR_INPUT_FOLDER is set to 1
 if [ $CLEAR_INPUT_FOLDER -eq 1 ]
@@ -148,7 +172,7 @@ for instance_segmented_point_cloud in $data_folder/instance_segmented_point_clou
 done
 
 echo "Done"
-
+echo "Results are in $data_folder/results"
 
 
 

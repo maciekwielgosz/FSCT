@@ -12,3 +12,5 @@ __pycache__/
 *.tmp
 .vscode/
 sample_data/segmented_point_clouds/*
+*.dat
+*.json
